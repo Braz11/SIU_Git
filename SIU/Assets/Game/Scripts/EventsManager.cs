@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 public static class EventsManager
 {
@@ -8,4 +9,5 @@ public static class EventsManager
 
     public static Action<string> OnWarningText;
     public static Action OnStartGame;
+    public static Action<List<CTeam>> OnDisplayTeams;
 }

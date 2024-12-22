@@ -122,11 +122,8 @@ public class GameManager : MonoBehaviour
         teams.Add(team1);
         teams.Add(team2);
 
-        foreach (var team in teams) {
-            Debug.Log("------- Team: " + team.teamName + ", Color: " + team.teamColor + "--------");
-            foreach (var player in team.players) {
-            Debug.Log("Player: " + player.name + ", Position: " + player.position + ", Times Played: " + player.timesPlayed);
-            }
-        }
+        EventsManager.OnDisplayTeams?.Invoke(teams);
+        
     }
+
 }
