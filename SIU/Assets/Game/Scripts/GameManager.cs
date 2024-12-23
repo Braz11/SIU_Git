@@ -76,7 +76,7 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game started with " + players.Count + " players");
 
         CreateTeams();
-
+        
     }
 
     private void CreateTeams() {
