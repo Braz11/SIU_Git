@@ -10,10 +10,12 @@ public enum TeamColor
     Green
 }
 
+[System.Serializable]
 public class CTeam
 { 
     public string teamName;
     public TeamColor teamColor;
+    public int teamProgress = 2;
 
     public enum PlayerPositions
     {
@@ -22,14 +24,15 @@ public class CTeam
         ST
     }
     
-    public class PlayerRole
+    [System.Serializable]
+    public class Player
     {
         public string name;
         public PlayerPositions position;
         public int timesPlayed;
     }
 
-    public List<PlayerRole> players;
+    public List<Player> players;
 }
 
 public class GameManager : MonoBehaviour
@@ -40,13 +43,13 @@ public class GameManager : MonoBehaviour
     private void Awake() {
         EventsManager.OnTryAddPayer += OnTryAddPayer;
         EventsManager.OnRemovedPlayer += OnRemovedPlayer;
-        EventsManager.OnStartGame += StartGame;
+        EventsManager.OnClickedStartGame += OnClickedStartGame;
     }
 
     private void OnDestroy() {
         EventsManager.OnTryAddPayer -= OnTryAddPayer;
         EventsManager.OnRemovedPlayer -= OnRemovedPlayer;
-        EventsManager.OnStartGame -= StartGame;
+        EventsManager.OnClickedStartGame -= OnClickedStartGame;
     }
 
     private void OnTryAddPayer(string name) {
@@ -67,16 +70,17 @@ public class GameManager : MonoBehaviour
         players.Remove(name);
     }
 
-    private void StartGame() {
+    private void OnClickedStartGame() {
         if(players.Count < 1) {
             EventsManager.OnWarningText?.Invoke("Need at least 1 player to start the game");
             return;
         }
 
-        Debug.Log("Game started with " + players.Count + " players");
 
         CreateTeams();
 
+        EventsManager.OnGameStarted?.Invoke(teams);
+        Debug.Log("Game started with " + players.Count + " players");
     }
 
     private void CreateTeams() {
@@ -93,8 +97,8 @@ public class GameManager : MonoBehaviour
 
         int halfCount = players.Count / 2;
 
-        CTeam team1 = new CTeam { teamName = "Team 1", teamColor = TeamColor.Red, players = new List<CTeam.PlayerRole>() };
-        CTeam team2 = new CTeam { teamName = "Team 2", teamColor = TeamColor.Blue, players = new List<CTeam.PlayerRole>() };
+        CTeam team1 = new CTeam { teamName = "Team 1", teamColor = TeamColor.Red, players = new List<CTeam.Player>() };
+        CTeam team2 = new CTeam { teamName = "Team 2", teamColor = TeamColor.Blue, players = new List<CTeam.Player>() };
 
         CTeam.PlayerPositions[] positions = { CTeam.PlayerPositions.CB, CTeam.PlayerPositions.MC, CTeam.PlayerPositions.ST };
 
@@ -109,7 +113,7 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            CTeam.PlayerRole playerRole = new CTeam.PlayerRole { name = players[i], position = positions[minPositionIndex], timesPlayed = 0 };
+            CTeam.Player playerRole = new CTeam.Player { name = players[i], position = positions[minPositionIndex], timesPlayed = 0 };
             positionCounts[minPositionIndex]++;
 
             if (i < halfCount) {

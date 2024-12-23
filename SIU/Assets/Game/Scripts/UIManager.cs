@@ -1,41 +1,39 @@
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField] TMP_InputField nameTextField;
-    [SerializeField] TextMeshProUGUI warningText;
-    [SerializeField] Button startGameBtn;
-    [SerializeField] Button addPlayerBtn;
-    [SerializeField] GameObject playerBoxPrefab;
-    [SerializeField] Transform content;
+    [SerializeField] List<GameObject> screens = new List<GameObject>();
 
     private void Awake() {
-        EventsManager.OnWarningText += ShowWarningText;
-        EventsManager.OnAddedPlayer += OnAddedPlayer;
-
-        addPlayerBtn.onClick.AddListener(() => {
-            EventsManager.OnTryAddPayer?.Invoke(nameTextField.text);
-            nameTextField.text = "";
-        });
-
-        startGameBtn.onClick.AddListener(() => {
-            EventsManager.OnStartGame?.Invoke();
-        });
+        EventsManager.OnShowScreen += ShowScreen;
     }
 
     private void OnDestroy() {
-        EventsManager.OnWarningText -= ShowWarningText;
-        EventsManager.OnAddedPlayer -= OnAddedPlayer;
+        EventsManager.OnShowScreen -= ShowScreen;
+    }
+    
+    private void Update() 
+    {
+        if(Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+            if(touch.phase == TouchPhase.Began)
+            {
+                EventsManager.OnUserClickedAtScreen?.Invoke();
+            }
+        }
+    }
+    
+
+    public void ShowScreen(string screenName)
+    {
+        HideAllScreens();
+        screens.Find(screen => screen.name == screenName).SetActive(true);
     }
 
-    private void ShowWarningText(string text) {
-        warningText.text = text;
-    }
-
-    private void OnAddedPlayer(string name) {
-        GameObject playerBox = Instantiate(playerBoxPrefab, content);
-        playerBox.GetComponent<PlayerBox>().SetName(name);
+    public void HideAllScreens()
+    {
+        screens.ForEach(screen => screen.SetActive(false));
     }
 }
