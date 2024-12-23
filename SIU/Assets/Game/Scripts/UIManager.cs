@@ -12,6 +12,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] GameObject playerBoxPrefab;
     [SerializeField] Transform content;
     [SerializeField] GameObject mainMenu;
+    [SerializeField] GameObject teamDisplay;
 
     private void Awake() {
         EventsManager.OnWarningText += ShowWarningText;
@@ -46,10 +47,14 @@ public class UIManager : MonoBehaviour
     private void DisableMainMenu() {
         mainMenu.SetActive(false);
     }
-    private void DisplayTeams(List<CTeam> teams) {
+    private void DisplayTeams(List<CTeam> teams)
+    {
+        teamDisplay.SetActive(true);
+        
         foreach(CTeam team in teams) {
             Debug.Log(team.teamName);
-            foreach(CTeam.PlayerRole player in team.players) {
+            foreach(CTeam.PlayerRole player in team.players)
+            {
                 Debug.Log(player.name + " " + player.position + " " + player.timesPlayed);
             }
         }
