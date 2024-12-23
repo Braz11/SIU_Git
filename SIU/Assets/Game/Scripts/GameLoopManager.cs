@@ -72,6 +72,7 @@ public class GameLoopManager : MonoBehaviour
         data.playersTeam2 = GetRandomnPlayersFromTeamWithSpecificPosition(1, TeamColor.Blue, CTeam.PlayerPositions.MC);
 
         EventsManager.OnShowScrambleScreen?.Invoke(data);
+        Debug.Log("Game Started");
     }
 
     private void OnStartFaceOff(ScrambleData data) 

@@ -8,6 +8,8 @@ public static class EventsManager
     public static Action<string> OnRemovedPlayer;
 
     public static Action<string> OnWarningText;
+    public static Action<List<CTeam>> OnShowTeamsDisplayScreen;
+
     public static Action<List<CTeam>> OnGameStarted;
     public static Action OnClickedStartGame;
 
@@ -25,5 +27,8 @@ public static class EventsManager
     public static Action<int> OnCurrentProgressChanged;
 
     public static Action<int> OnTeamWin;
+
+
+
 
 }

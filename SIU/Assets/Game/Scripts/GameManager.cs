@@ -79,7 +79,7 @@ public class GameManager : MonoBehaviour
 
         CreateTeams();
 
-        EventsManager.OnGameStarted?.Invoke(teams);
+        EventsManager.OnShowTeamsDisplayScreen?.Invoke(teams);
         Debug.Log("Game started with " + players.Count + " players");
     }
 
