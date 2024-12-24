@@ -15,7 +15,6 @@ public class CTeam
 { 
     public string teamName;
     public TeamColor teamColor;
-    public int teamProgress = 2;
 
     public enum PlayerPositions
     {

@@ -27,6 +27,8 @@ public static class EventsManager
     public static Action<int> OnCurrentProgressChanged;
 
     public static Action<int> OnTeamWin;
+    public static Action<EndFaceoffData> OnShowEndFaceoffScreen;
+    public static Action<CTeam.PlayerPositions> OnDefineNewMatchup;
 
 
 

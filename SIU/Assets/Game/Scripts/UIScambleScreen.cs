@@ -41,6 +41,8 @@ public class UIScambleScreen : UIManager
         zoneText.text = data.zoneText;
         zoneDetailedText.text = data.zoneDetailedText;
 
+        ClearTeamsContent();
+
         data.playersTeam1.ForEach(player => {
             Instantiate(playerNames, team1Content).SetText(player.name);
         });
@@ -49,5 +51,14 @@ public class UIScambleScreen : UIManager
             Instantiate(playerNames, team2Content).SetText(player.name);
         });
         
+    }
+
+    private void ClearTeamsContent() {
+        foreach (Transform child in team1Content) {
+            Destroy(child.gameObject);
+        }
+        foreach (Transform child in team2Content) {
+            Destroy(child.gameObject);
+        }
     }
 }

@@ -25,6 +25,10 @@ public struct FaceOffData
 
     public PhrasesData phrase;
 }
+public struct EndFaceoffData
+{
+    public int teamNumber;
+}
 
 
 public class GameLoopManager : MonoBehaviour
@@ -33,20 +37,28 @@ public class GameLoopManager : MonoBehaviour
 
     private List<PhrasesData> phrases = new List<PhrasesData>();
 
-    private int currentProgress = 0;
+    [SerializeField]private int _currentProgress;
+    private int currentProgress 
+    {
+        get { return _currentProgress; }
+        set { _currentProgress = Mathf.Clamp(value, 0, 6); }
+    }
+    
 
     private void Start() {
         EventsManager.OnGameStarted += OnGameStarted;
         EventsManager.OnStartFaceOff += OnStartFaceOff;
         EventsManager.OnPhraseCreated += OnPhraseCreated;
-        EventsManager.OnTeamWin += OnTeamWin;
+        EventsManager.OnTeamWin += OnTeamWinFaceoff;
+        EventsManager.OnDefineNewMatchup += DefineMatchup;
     }
 
     private void OnDestroy() {
         EventsManager.OnGameStarted -= OnGameStarted;
         EventsManager.OnStartFaceOff -= OnStartFaceOff;
         EventsManager.OnPhraseCreated -= OnPhraseCreated;
-        EventsManager.OnTeamWin -= OnTeamWin;
+        EventsManager.OnTeamWin -= OnTeamWinFaceoff;
+        EventsManager.OnDefineNewMatchup -= DefineMatchup;
     }
 
     private void OnPhraseCreated(PhrasesData data) {
@@ -54,25 +66,51 @@ public class GameLoopManager : MonoBehaviour
     }
 
     private void OnGameStarted(List<CTeam> teams) {
-        this.teams = teams;
+        this.teams = teams;   
 
-        foreach(CTeam team in teams) {
-            currentProgress += team.teamProgress;
-        }
-
-        currentProgress = currentProgress / teams.Count;
+        currentProgress = 3;
 
         EventsManager.OnCurrentProgressChanged?.Invoke(currentProgress);
 
+        DefineMatchup(CTeam.PlayerPositions.MC);
+    }
+    private void DefineMatchup(CTeam.PlayerPositions attackingPosition)
+    {
+        switch (currentProgress)
+        {
+            case 0:
+                GoalScored(teams[0]);
+                break;
+            case 1:
+                CreateMatchup("Shot!" , teams[1], teams[0], attackingPosition, GetRandomPosition());
+                break;
+            case 2:
+                CreateMatchup("Attack", teams[1], teams[0], attackingPosition, CTeam.PlayerPositions.CB);
+                break;
+            case 3:
+                CreateMatchup("Midfield", teams[1], teams[0], attackingPosition, CTeam.PlayerPositions.MC);
+                break;
+            case 4:
+                CreateMatchup("Attack", teams[0], teams[1], attackingPosition, CTeam.PlayerPositions.CB);
+                break;
+            case 5:
+                CreateMatchup("Shot!", teams[0], teams[1], attackingPosition, GetRandomPosition());
+                break;
+            case 6:
+                GoalScored(teams[1]);
+                break;
+        }
+    }
+
+    private void CreateMatchup(string zoneName, CTeam attackingTeam, CTeam defendingTeam, CTeam.PlayerPositions attackingPosition, CTeam.PlayerPositions defendingPosition) {
         ScrambleData data = new ScrambleData();
-        data.zoneText = "Midfield";
+        data.zoneText = "Attack";
         data.zoneDetailedText = "scramble!";
         data.phraseType = GetRandomPhraseType();
-        data.playersTeam1 = GetRandomnPlayersFromTeamWithSpecificPosition(1, TeamColor.Red, CTeam.PlayerPositions.MC);
-        data.playersTeam2 = GetRandomnPlayersFromTeamWithSpecificPosition(1, TeamColor.Blue, CTeam.PlayerPositions.MC);
+        data.playersTeam1 = GetRandomnPlayersFromTeamWithSpecificPosition(1, attackingTeam.teamColor, CTeam.PlayerPositions.ST);
+        data.playersTeam2 = GetRandomnPlayersFromTeamWithSpecificPosition(1, defendingTeam.teamColor, CTeam.PlayerPositions.CB);
 
         EventsManager.OnShowScrambleScreen?.Invoke(data);
-        Debug.Log("Game Started");
     }
 
     private void OnStartFaceOff(ScrambleData data) 
@@ -87,23 +125,32 @@ public class GameLoopManager : MonoBehaviour
         EventsManager.OnShowFaceOffScreen?.Invoke(faceOffData);
     }
 
-    private void OnTeamWin(int teamNumber) {
-        CTeam team = teams[teamNumber - 1];
+    private void OnTeamWinFaceoff(int teamNumber) {
 
         if(teamNumber == 1)
-            team.teamProgress += 1;
+            currentProgress += 1;
         else
-            team.teamProgress -= 1;
+            currentProgress -= 1;
 
-        currentProgress = team.teamProgress;
-
+        EndFaceoffData faceOffData = new EndFaceoffData();
+        faceOffData.teamNumber = teamNumber;
         EventsManager.OnCurrentProgressChanged?.Invoke(currentProgress);
+        EventsManager.OnShowEndFaceoffScreen?.Invoke(faceOffData);
+    }
+    
+    private void GoalScored(CTeam team) {
+        Debug.Log("Goal scored by " + team.teamName);
+        currentProgress = 3;
+        DefineMatchup(CTeam.PlayerPositions.MC);
     }
 
-    #region Utiliy Methods
+    #region Utility Methods
     
     private PhraseType GetRandomPhraseType(){
         return (PhraseType)Random.Range(0, 3);
+    }
+    private CTeam.PlayerPositions GetRandomPosition(){
+        return (CTeam.PlayerPositions)Random.Range(0, 3);
     }
 
     private List<CTeam.Player> GetRandomnPlayersFromTeamWithSpecificPosition(int numberOfPlayerToReturn, TeamColor teamColor, CTeam.PlayerPositions position){
