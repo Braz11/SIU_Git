@@ -32,6 +32,7 @@ public class CTeam
     }
 
     public List<Player> players;
+    public PlayerPositions nextPositionPlay;
 }
 
 public class GameManager : MonoBehaviour
@@ -96,8 +97,8 @@ public class GameManager : MonoBehaviour
 
         int halfCount = players.Count / 2;
 
-        CTeam team1 = new CTeam { teamName = "Team 1", teamColor = TeamColor.Red, players = new List<CTeam.Player>() };
-        CTeam team2 = new CTeam { teamName = "Team 2", teamColor = TeamColor.Blue, players = new List<CTeam.Player>() };
+        CTeam team1 = new CTeam { teamName = "Team 1", teamColor = TeamColor.Blue, players = new List<CTeam.Player>() };
+        CTeam team2 = new CTeam { teamName = "Team 2", teamColor = TeamColor.Red, players = new List<CTeam.Player>() };
 
         CTeam.PlayerPositions[] positions = { CTeam.PlayerPositions.CB, CTeam.PlayerPositions.MC, CTeam.PlayerPositions.ST };
 

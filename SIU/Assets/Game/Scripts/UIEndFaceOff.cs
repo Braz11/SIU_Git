@@ -1,25 +1,37 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using UnityEditor.PackageManager;
+
+
+public enum ActionBtn
+{
+    Pass,
+    Shoot,
+    Dribble,
+    LongPass
+}
 public class UIEndFaceOff : MonoBehaviour
 {
     [SerializeField] private GameObject myPanel;
     [SerializeField] private TMP_Text teamWinText;
-    [SerializeField] private Button buttonOption1;
-    [SerializeField] private Button buttonOption2;
-    [SerializeField] private CTeam.PlayerPositions positionForOption1;
-    [SerializeField] private CTeam.PlayerPositions positionForOption2;
+
+    [SerializeField] private Button passBtn;
+    [SerializeField] private Button shootBtn;
+    [SerializeField] private Button dribleBtn;
+    [SerializeField] private Button longPassBtn;
+
+    private CTeam.Player lastPlayerThatPlayed;
 
     private void Awake() {
         EventsManager.OnShowEndFaceoffScreen += OnShowEndFaceoffScreen;
-        buttonOption1.onClick.AddListener(Option1);
-        buttonOption2.onClick.AddListener(Option2);
+
+        passBtn.onClick.AddListener(() => { ActionBtnClicked(ActionBtn.Pass); });
+        shootBtn.onClick.AddListener(() => { ActionBtnClicked(ActionBtn.Shoot); });
+        dribleBtn.onClick.AddListener(() => { ActionBtnClicked(ActionBtn.Dribble); });
+        longPassBtn.onClick.AddListener(() => { ActionBtnClicked(ActionBtn.LongPass); });
     }
     private void OnDestroy() {
         EventsManager.OnShowEndFaceoffScreen -= OnShowEndFaceoffScreen;
-        buttonOption1.onClick.RemoveListener(Option1);
-        buttonOption2.onClick.RemoveListener(Option2);
     }
 
     private void OnShowEndFaceoffScreen(EndFaceoffData data)
@@ -30,14 +42,59 @@ public class UIEndFaceOff : MonoBehaviour
         } else {
             teamWinText.text = "<color=red>RED</color> wins!";
         }
+
+        lastPlayerThatPlayed = data.playerThatPlayed;
+
+        Debug.Log("Player that played: " + data.playerThatPlayed.name);
+
+        HideAllBtns();
+
+        switch (data.playerThatPlayed.position)
+        {
+            case CTeam.PlayerPositions.CB:
+                passBtn.gameObject.SetActive(true);
+                longPassBtn.gameObject.SetActive(true);
+                break;
+            case CTeam.PlayerPositions.MC:
+                passBtn.gameObject.SetActive(true);
+                dribleBtn.gameObject.SetActive(true);
+                break;
+            case CTeam.PlayerPositions.ST:
+                shootBtn.gameObject.SetActive(true);
+                break;
+        }
         
     }
-   private void Option1()
+
+   private void ActionBtnClicked(ActionBtn action)
    {
-        EventsManager.OnDefineNewMatchup?.Invoke(positionForOption1);
+
+        switch(lastPlayerThatPlayed.position)
+        {
+            case CTeam.PlayerPositions.CB:
+                if(action == ActionBtn.Pass)
+                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.MC);
+                else if(action == ActionBtn.LongPass)
+                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
+                break;
+            case CTeam.PlayerPositions.MC:
+                if(action == ActionBtn.Pass)
+                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
+                else if(action == ActionBtn.Dribble)
+                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.MC);
+                break;
+            case CTeam.PlayerPositions.ST:
+                if(action == ActionBtn.Shoot)
+                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
+                break;
+        }
    }
-   private void Option2()
+
+   private void HideAllBtns()
    {
-        EventsManager.OnDefineNewMatchup?.Invoke(positionForOption2);
+        passBtn.gameObject.SetActive(false);
+        shootBtn.gameObject.SetActive(false);
+        dribleBtn.gameObject.SetActive(false);
+        longPassBtn.gameObject.SetActive(false);
    }
 }

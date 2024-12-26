@@ -23,10 +23,13 @@ public struct FaceOffData
 {
     public int currentProgress;
 
+    public ScrambleData scrambleData;
+
     public PhrasesData phrase;
 }
 public struct EndFaceoffData
 {
+    public CTeam.Player playerThatPlayed;
     public int teamNumber;
 }
 
@@ -67,51 +70,87 @@ public class GameLoopManager : MonoBehaviour
 
     private void OnGameStarted(List<CTeam> teams) {
         this.teams = teams;   
-
-        currentProgress = 3;
-
-        EventsManager.OnCurrentProgressChanged?.Invoke(currentProgress);
-
-        DefineMatchup(CTeam.PlayerPositions.MC);
+        StartNewGame();
     }
-    private void DefineMatchup(CTeam.PlayerPositions attackingPosition)
+
+    private void DefineMatchup(ActionBtn lastActionPreformed, CTeam.Player lastPlayerThatPlayed, CTeam.PlayerPositions nextPositionToBePlayed)
     {
+        CTeam currentTeamWithPossession = GetTeamNumberFromPlayer(lastPlayerThatPlayed);
+        CTeam teamWithoutPossession = teams.Find(team => team != currentTeamWithPossession);
+
+        currentTeamWithPossession.nextPositionPlay = nextPositionToBePlayed;
+
+        
+        if(currentTeamWithPossession.teamColor == TeamColor.Blue)
+            if(lastActionPreformed == ActionBtn.LongPass)
+                currentProgress += 2;
+            else
+                currentProgress += 1;
+        else
+            if(lastActionPreformed == ActionBtn.LongPass)
+                currentProgress -= 2;
+            else
+                currentProgress -= 1;
+            
+
         switch (currentProgress)
         {
             case 0:
-                GoalScored(teams[0]);
+                teamWithoutPossession.nextPositionPlay = CTeam.PlayerPositions.MC;
+                CreateMatchup("Midfield!");
                 break;
             case 1:
-                CreateMatchup("Shot!" , teams[1], teams[0], attackingPosition, GetRandomPosition());
+                teamWithoutPossession.nextPositionPlay = CTeam.PlayerPositions.CB;
+                if(lastActionPreformed == ActionBtn.Dribble)
+                    CreateMatchup(currentTeamWithPossession, lastPlayerThatPlayed, "Attack!");
+                else
+                    CreateMatchup("Attack!");
                 break;
             case 2:
-                CreateMatchup("Attack", teams[1], teams[0], attackingPosition, CTeam.PlayerPositions.CB);
+
+                teamWithoutPossession.nextPositionPlay = GetRandomPosition();
+                CreateMatchup("Shot!");
                 break;
             case 3:
-                CreateMatchup("Midfield", teams[1], teams[0], attackingPosition, CTeam.PlayerPositions.MC);
-                break;
-            case 4:
-                CreateMatchup("Attack", teams[0], teams[1], attackingPosition, CTeam.PlayerPositions.CB);
-                break;
-            case 5:
-                CreateMatchup("Shot!", teams[0], teams[1], attackingPosition, GetRandomPosition());
-                break;
-            case 6:
-                GoalScored(teams[1]);
+                GoalScored(currentTeamWithPossession);
                 break;
         }
     }
+    
 
-    private void CreateMatchup(string zoneName, CTeam attackingTeam, CTeam defendingTeam, CTeam.PlayerPositions attackingPosition, CTeam.PlayerPositions defendingPosition) {
+    //For Normal Matchups
+    private void CreateMatchup(string zoneName) {
         ScrambleData data = new ScrambleData();
-        data.zoneText = "Attack";
+        data.zoneText = zoneName;
         data.zoneDetailedText = "scramble!";
         data.phraseType = GetRandomPhraseType();
-        data.playersTeam1 = GetRandomnPlayersFromTeamWithSpecificPosition(1, attackingTeam.teamColor, CTeam.PlayerPositions.ST);
-        data.playersTeam2 = GetRandomnPlayersFromTeamWithSpecificPosition(1, defendingTeam.teamColor, CTeam.PlayerPositions.CB);
+
+        data.playersTeam1 = GetRandomPlayersFromTeamWithSpecificPosition(1, TeamColor.Blue, teams[0].nextPositionPlay);
+        data.playersTeam2 = GetRandomPlayersFromTeamWithSpecificPosition(1, TeamColor.Red, teams[1].nextPositionPlay);
 
         EventsManager.OnShowScrambleScreen?.Invoke(data);
     }
+
+    //If we have to dribble
+    private void CreateMatchup(CTeam winningTeam, CTeam.Player lastPlayerThatPlayed, string zoneName) {
+        ScrambleData data = new ScrambleData();
+        data.zoneText = zoneName;
+        data.zoneDetailedText = "scramble!";
+        data.phraseType = GetRandomPhraseType();
+
+
+        if(winningTeam.teamColor == TeamColor.Blue){
+            data.playersTeam1 = new List<CTeam.Player> { lastPlayerThatPlayed };
+            data.playersTeam2 = GetRandomPlayersFromTeamWithSpecificPosition(1, TeamColor.Red, teams[1].nextPositionPlay);
+    
+        }else{
+            data.playersTeam1 = GetRandomPlayersFromTeamWithSpecificPosition(1, TeamColor.Blue, teams[0].nextPositionPlay);
+            data.playersTeam2 = new List<CTeam.Player> { lastPlayerThatPlayed };
+        }
+        
+        EventsManager.OnShowScrambleScreen?.Invoke(data);
+    }
+
 
     private void OnStartFaceOff(ScrambleData data) 
     {
@@ -120,32 +159,52 @@ public class GameLoopManager : MonoBehaviour
 
         FaceOffData faceOffData = new FaceOffData();
         faceOffData.phrase = phrase;
+        faceOffData.scrambleData = data;
         faceOffData.currentProgress = currentProgress;
 
         EventsManager.OnShowFaceOffScreen?.Invoke(faceOffData);
     }
 
-    private void OnTeamWinFaceoff(int teamNumber) {
-
-        if(teamNumber == 1)
-            currentProgress += 1;
-        else
-            currentProgress -= 1;
+    private void OnTeamWinFaceoff(FaceOffData data, int teamNumber) {
 
         EndFaceoffData faceOffData = new EndFaceoffData();
+
+        if(teamNumber == 1){
+            faceOffData.playerThatPlayed = data.scrambleData.playersTeam1[0];
+        }else{
+            faceOffData.playerThatPlayed = data.scrambleData.playersTeam2[0];
+        }
+
         faceOffData.teamNumber = teamNumber;
-        EventsManager.OnCurrentProgressChanged?.Invoke(currentProgress);
+
         EventsManager.OnShowEndFaceoffScreen?.Invoke(faceOffData);
     }
     
-    private void GoalScored(CTeam team) {
+    private void GoalScored(CTeam team)
+    {
         Debug.Log("Goal scored by " + team.teamName);
-        currentProgress = 3;
-        DefineMatchup(CTeam.PlayerPositions.MC);
+
+        StartNewGame();
+
+        EventsManager.OnGoal?.Invoke(team);
+    }
+
+    private void StartNewGame()
+    {
+        currentProgress = 0;
+
+        EventsManager.OnCurrentProgressChanged?.Invoke(currentProgress);
+
+        foreach (CTeam t in teams)
+        {
+            t.nextPositionPlay = CTeam.PlayerPositions.MC;
+        }
+
+        CreateMatchup("Midfield!");
     }
 
     #region Utility Methods
-    
+
     private PhraseType GetRandomPhraseType(){
         return (PhraseType)Random.Range(0, 3);
     }
@@ -153,7 +212,7 @@ public class GameLoopManager : MonoBehaviour
         return (CTeam.PlayerPositions)Random.Range(0, 3);
     }
 
-    private List<CTeam.Player> GetRandomnPlayersFromTeamWithSpecificPosition(int numberOfPlayerToReturn, TeamColor teamColor, CTeam.PlayerPositions position){
+    private List<CTeam.Player> GetRandomPlayersFromTeamWithSpecificPosition(int numberOfPlayerToReturn, TeamColor teamColor, CTeam.PlayerPositions position){
         List<CTeam.Player> playersWithPosition = teams.Find(team => team.teamColor == teamColor).players.FindAll(player => player.position == position);
         
         List<CTeam.Player> playersToReturn = new List<CTeam.Player>();
@@ -168,6 +227,15 @@ public class GameLoopManager : MonoBehaviour
         }
 
         return playersToReturn;
+    }
+
+    private CTeam GetTeamNumberFromPlayer(CTeam.Player player){
+        foreach(CTeam team in teams){
+            if(team.players.Contains(player)){
+                return team;
+            }
+        }
+        return null;
     }
     
     #endregion

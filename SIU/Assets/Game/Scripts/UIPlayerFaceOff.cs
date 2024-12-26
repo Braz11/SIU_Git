@@ -11,6 +11,8 @@ public class UIPlayerFaceOff : MonoBehaviour
     [SerializeField] private Button team1WinsBtn;
     [SerializeField] private Button team2WinsBtn;
 
+    private FaceOffData myData;
+
     private void Awake() {
         EventsManager.OnShowFaceOffScreen += OnShowFaceOffScreen;
         EventsManager.OnCurrentProgressChanged += (progress) => progressSlider.value = progress;
@@ -29,17 +31,19 @@ public class UIPlayerFaceOff : MonoBehaviour
     private void OnShowFaceOffScreen(FaceOffData data) {
         EventsManager.OnShowScreen?.Invoke(myPanel.name);
         
+        myData = data;
+
         progressSlider.value = data.currentProgress;
         phraseIdentifier.text = data.phrase.phraseIdentifier;
         phraseText.text = data.phrase.phrase;
     }
     
     private void OnTeam1Wins() {
-        EventsManager.OnTeamWin?.Invoke(1);
+        EventsManager.OnTeamWin?.Invoke(myData, 1);
     }
 
     private void OnTeam2Wins() {
-        EventsManager.OnTeamWin.Invoke(2);
+        EventsManager.OnTeamWin.Invoke(myData, 2);
     }
 }
 
