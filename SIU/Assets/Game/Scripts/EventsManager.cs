@@ -17,6 +17,7 @@ public static class EventsManager
     public static Action<FaceOffData> OnShowFaceOffScreen;
 
     public static Action<ScrambleData> OnStartFaceOff;
+    public static Action<GameEvent, MatchupData> OnShowGameEventScreen;
 
     public static Action<string> OnShowScreen;
 
@@ -29,8 +30,10 @@ public static class EventsManager
     public static Action<FaceOffData, int> OnTeamWin;
     public static Action<EndFaceoffData> OnShowEndFaceoffScreen;
     public static Action<ActionBtn, CTeam.Player, CTeam.PlayerPositions> OnDefineNewMatchup;
+    public static Action<ActionBtn, CTeam.Player, CTeam.PlayerPositions> OnRandomEventChance;
 
     public static Action<CTeam> OnGoal;
+    
 
 
 }

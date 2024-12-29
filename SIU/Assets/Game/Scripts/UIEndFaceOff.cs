@@ -73,19 +73,19 @@ public class UIEndFaceOff : MonoBehaviour
         {
             case CTeam.PlayerPositions.CB:
                 if(action == ActionBtn.Pass)
-                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.MC);
+                    EventsManager.OnRandomEventChance?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.MC);
                 else if(action == ActionBtn.LongPass)
-                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
+                    EventsManager.OnRandomEventChance?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
                 break;
             case CTeam.PlayerPositions.MC:
                 if(action == ActionBtn.Pass)
-                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
+                    EventsManager.OnRandomEventChance?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
                 else if(action == ActionBtn.Dribble)
-                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.MC);
+                    EventsManager.OnRandomEventChance?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.MC);
                 break;
             case CTeam.PlayerPositions.ST:
                 if(action == ActionBtn.Shoot)
-                    EventsManager.OnDefineNewMatchup?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
+                    EventsManager.OnRandomEventChance?.Invoke(action, lastPlayerThatPlayed, CTeam.PlayerPositions.ST);
                 break;
         }
    }

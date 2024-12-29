@@ -7,5 +7,5 @@ public abstract class GameEvent : ScriptableObject
     public string eventName;
     public string eventDescription;
     public Sprite eventIcon;
-    public abstract void GameEventMethod(GameManager gameManager);
+    public abstract void GameEventMethod(GameLoopManager gameLoopManager);
 }

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum Zone
@@ -32,6 +33,12 @@ public struct EndFaceoffData
     public CTeam.Player playerThatPlayed;
     public int teamNumber;
 }
+public struct MatchupData
+{
+    public ActionBtn lastActionPreformed;
+    public CTeam.Player lastPlayerThatPlayed;
+    public CTeam.PlayerPositions nextPositionToBePlayed;
+}
 
 
 public class GameLoopManager : MonoBehaviour
@@ -40,7 +47,10 @@ public class GameLoopManager : MonoBehaviour
 
     private List<PhrasesData> phrases = new List<PhrasesData>();
 
-    [SerializeField]private int _currentProgress;
+    [SerializeField] private int _currentProgress;
+    [SerializeField] private int randomEventChance = 70;
+    [SerializeField] private GameEvent[] randomEvents;
+    [SerializeField] private MatchupData matchupData;
     private int currentProgress 
     {
         get { return _currentProgress; }
@@ -54,6 +64,7 @@ public class GameLoopManager : MonoBehaviour
         EventsManager.OnPhraseCreated += OnPhraseCreated;
         EventsManager.OnTeamWin += OnTeamWinFaceoff;
         EventsManager.OnDefineNewMatchup += DefineMatchup;
+        EventsManager.OnRandomEventChance += CheckForRandomEvent;
     }
 
     private void OnDestroy() {
@@ -62,6 +73,7 @@ public class GameLoopManager : MonoBehaviour
         EventsManager.OnPhraseCreated -= OnPhraseCreated;
         EventsManager.OnTeamWin -= OnTeamWinFaceoff;
         EventsManager.OnDefineNewMatchup -= DefineMatchup;
+        EventsManager.OnRandomEventChance -= CheckForRandomEvent;
     }
 
     private void OnPhraseCreated(PhrasesData data) {
@@ -72,9 +84,31 @@ public class GameLoopManager : MonoBehaviour
         this.teams = teams;   
         StartNewGame();
     }
+    private void CheckForRandomEvent(ActionBtn lastActionPreformed, CTeam.Player lastPlayerThatPlayed, CTeam.PlayerPositions nextPositionToBePlayed)
+    {
+        if (Random.Range(0, 100) <= randomEventChance && randomEvents.Length > 0)
+        {
+            GameEvent gameEvent = randomEvents[Random.Range(0, randomEvents.Length)];
+            gameEvent.GameEventMethod(this);
+
+            MatchupData matchupData = new MatchupData();
+            matchupData.lastActionPreformed = lastActionPreformed;
+            matchupData.lastPlayerThatPlayed = lastPlayerThatPlayed;
+            matchupData.nextPositionToBePlayed = nextPositionToBePlayed;
+
+            EventsManager.OnShowGameEventScreen?.Invoke(gameEvent, matchupData);
+            Debug.Log("Random Event!");    
+        }
+        else
+        {
+            EventsManager.OnDefineNewMatchup?.Invoke(lastActionPreformed, lastPlayerThatPlayed, nextPositionToBePlayed);
+        }    
+    }
 
     private void DefineMatchup(ActionBtn lastActionPreformed, CTeam.Player lastPlayerThatPlayed, CTeam.PlayerPositions nextPositionToBePlayed)
     {
+
+
         CTeam currentTeamWithPossession = GetTeamNumberFromPlayer(lastPlayerThatPlayed);
         CTeam teamWithoutPossession = teams.Find(team => team != currentTeamWithPossession);
 
