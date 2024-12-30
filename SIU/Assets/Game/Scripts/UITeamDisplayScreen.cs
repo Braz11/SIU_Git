@@ -52,10 +52,16 @@ public class UITeamDisplayScreen : MonoBehaviour
         foreach (CTeam.Player player in players)
         {
             GameObject playerDisplay = Instantiate(playerPrefab, containers[index].transform);
+            playerDisplay.GetComponentInChildren<HeadItem>().Initalize(player.bodyPartInfo);
             playerDisplay.GetComponentInChildren<TextMeshProUGUI>().text = player.name;
             if (playerIcons.Length > 0)
             {
                 playerDisplay.GetComponentInChildren<Image>().sprite = playerIcons[Random.Range(0, playerIcons.Length)];
+            }
+
+            if(index == 0)
+            {
+                playerDisplay.GetComponentInChildren<HeadItem>().gameObject.transform.rotation = Quaternion.Euler(0, 180, 0);
             }
         }
         int newIndex = index + 1;

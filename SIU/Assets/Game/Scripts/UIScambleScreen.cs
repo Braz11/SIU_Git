@@ -9,9 +9,13 @@ public class UIScambleScreen : UIManager
     [SerializeField] private TextMeshProUGUI zoneText;
     [SerializeField] private TextMeshProUGUI zoneDetailedText;
     [SerializeField] private TextMeshProUGUI playerNames;
+    [SerializeField] private HeadItem headItem;
 
     [SerializeField] private Transform team1Content;
     [SerializeField] private Transform team2Content;
+
+    [SerializeField] private Transform team1HeadsContent;
+    [SerializeField] private Transform team2HeadsContent;
 
     ScrambleData myData;
 
@@ -50,6 +54,18 @@ public class UIScambleScreen : UIManager
         data.playersTeam2.ForEach(player => {
             Instantiate(playerNames, team2Content).SetText(player.name);
         });
+
+        ClearHeadsContent();
+
+        data.playersTeam1.ForEach(player => {
+            HeadItem head = Instantiate(headItem, team1HeadsContent);
+            head.Initalize(player.bodyPartInfo);
+        });
+
+        data.playersTeam2.ForEach(player => {
+            HeadItem head = Instantiate(headItem, team2HeadsContent);
+            head.Initalize(player.bodyPartInfo);
+        });
         
     }
 
@@ -58,6 +74,15 @@ public class UIScambleScreen : UIManager
             Destroy(child.gameObject);
         }
         foreach (Transform child in team2Content) {
+            Destroy(child.gameObject);
+        }
+    }
+
+    private void ClearHeadsContent() {
+        foreach (Transform child in team1HeadsContent) {
+            Destroy(child.gameObject);
+        }
+        foreach (Transform child in team2HeadsContent) {
             Destroy(child.gameObject);
         }
     }

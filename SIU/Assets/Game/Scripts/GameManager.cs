@@ -29,6 +29,7 @@ public class CTeam
         public string name;
         public PlayerPositions position;
         public int timesPlayed;
+        public BodyPartInfo bodyPartInfo;
     }
 
     public List<Player> players;
@@ -114,6 +115,8 @@ public class GameManager : MonoBehaviour
             }
 
             CTeam.Player playerRole = new CTeam.Player { name = players[i], position = positions[minPositionIndex], timesPlayed = 0 };
+            EventsManager.OnCreateBody?.Invoke(playerRole);
+            
             positionCounts[minPositionIndex]++;
 
             if (i < halfCount) {

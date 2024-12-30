@@ -18,8 +18,6 @@ public class UIMainMenuManager : MonoBehaviour
 
         addPlayerBtn.onClick.AddListener(() => {
             EventsManager.OnTryAddPayer?.Invoke(nameTextField.text);
-            nameTextField.Select();
-            nameTextField.ActivateInputField();
             nameTextField.text = "";
         });
 
@@ -29,8 +27,6 @@ public class UIMainMenuManager : MonoBehaviour
 
         nameTextField.onSubmit.AddListener((string name) => {
             EventsManager.OnTryAddPayer?.Invoke(name);
-            nameTextField.Select();
-            nameTextField.ActivateInputField();
             nameTextField.text = "";
         });
     }

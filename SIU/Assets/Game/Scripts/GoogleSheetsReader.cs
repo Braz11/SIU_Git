@@ -7,6 +7,7 @@ public enum PhraseType
     Prompt,
     Trivia,
     IndivialTask,
+    Corner
 }
 
 [System.Serializable]
@@ -23,16 +24,18 @@ public class GoogleSheetsReader : MonoBehaviour
     private const string SHEET_URL_TRIVIA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs1ccJqJo2x7veftoNM2CR2NzcmTwF5fik56T1vkdgWpT5cpKpUvVe5org7IXayNmTUHiOmJxxE7s6/pub?gid=0&single=true&output=csv";
     private const string SHEET_URL_PROMPTS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs1ccJqJo2x7veftoNM2CR2NzcmTwF5fik56T1vkdgWpT5cpKpUvVe5org7IXayNmTUHiOmJxxE7s6/pub?gid=89175097&single=true&output=csv";
     private const string SHEET_URL_TASKS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs1ccJqJo2x7veftoNM2CR2NzcmTwF5fik56T1vkdgWpT5cpKpUvVe5org7IXayNmTUHiOmJxxE7s6/pub?gid=321474469&single=true&output=csv";
-    
+    private const string SHEET_URL_CORNER = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs1ccJqJo2x7veftoNM2CR2NzcmTwF5fik56T1vkdgWpT5cpKpUvVe5org7IXayNmTUHiOmJxxE7s6/pub?gid=807947422&single=true&output=csv";
     private string triviaData;
     private string promptsData;
     private string tasksData;
+    private string cornerData;
     
     void Start()
     {
         StartCoroutine(GetSheetData(PhraseType.Trivia, triviaData, SHEET_URL_TRIVIA));
         StartCoroutine(GetSheetData(PhraseType.Prompt, promptsData, SHEET_URL_PROMPTS));
         StartCoroutine(GetSheetData(PhraseType.IndivialTask, tasksData, SHEET_URL_TASKS));
+        StartCoroutine(GetSheetData(PhraseType.Corner, cornerData, SHEET_URL_CORNER));
     }
 
     IEnumerator GetSheetData(PhraseType type, string dataUrl, string SHEET_URL)

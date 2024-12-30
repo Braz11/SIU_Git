@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public static class EventsManager
 {
+    public static Action OnStartNewGame;
     public static Action<string> OnTryAddPayer;
     public static Action<string> OnAddedPlayer;
     public static Action<string> OnRemovedPlayer;
@@ -18,6 +20,8 @@ public static class EventsManager
 
     public static Action<ScrambleData> OnStartFaceOff;
     public static Action<GameEvent, MatchupData> OnShowGameEventScreen;
+    public static Action<SaveGoalEvents, GameLoopManager> OnShowGoalSceneEventScreen;
+    public static Action<CornerInfo> OnShowCornerEventScreen;
 
     public static Action<string> OnShowScreen;
 
@@ -35,5 +39,11 @@ public static class EventsManager
     public static Action<CTeam> OnGoal;
     
 
+    public static Action<CTeam.Player> OnCreateBody;
+    public static Action<Image, Image, BodyPartInfo> OnAssembleBody;
 
+    public static Action<CTeam> OnCornerGoal;
+    public static Action<CTeam> OnThrowToMidfield;
+
+    public static Action<CTeam> OnShowGoalScreen;
 }

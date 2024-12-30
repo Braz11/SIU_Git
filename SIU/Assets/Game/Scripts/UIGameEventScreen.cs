@@ -2,7 +2,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using UnityEditor.PackageManager;
 public class UIGameEventScreen : MonoBehaviour
 {
     [SerializeField] private GameObject myPanel;

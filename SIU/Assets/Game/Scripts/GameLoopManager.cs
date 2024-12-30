@@ -48,13 +48,22 @@ public class GameLoopManager : MonoBehaviour
     private List<PhrasesData> phrases = new List<PhrasesData>();
 
     [SerializeField] private int _currentProgress;
+
     [SerializeField] private int randomEventChance = 70;
+    [Range(0f, 1f)]
+    [SerializeField] private float randomSaveEventChance = .2f;
+
     [SerializeField] private GameEvent[] randomEvents;
+    [SerializeField] private SaveGoalEvents[] saveGoalEvents;
+
+    private CTeam currentTeamWinning;
+    public CTeam CurrentTeamWinning { get { return currentTeamWinning; } }
+
     [SerializeField] private MatchupData matchupData;
-    private int currentProgress 
+    public int currentProgress 
     {
         get { return _currentProgress; }
-        set { _currentProgress = Mathf.Clamp(value, 0, 6); }
+        set { _currentProgress = Mathf.Clamp(value, -3, 3); }
     }
     
 
@@ -65,6 +74,9 @@ public class GameLoopManager : MonoBehaviour
         EventsManager.OnTeamWin += OnTeamWinFaceoff;
         EventsManager.OnDefineNewMatchup += DefineMatchup;
         EventsManager.OnRandomEventChance += CheckForRandomEvent;
+        EventsManager.OnCornerGoal += OnCornerGoal;
+        EventsManager.OnThrowToMidfield += OnThrowToMidfield;
+        EventsManager.OnStartNewGame += OnStartNewGame;
     }
 
     private void OnDestroy() {
@@ -74,6 +86,13 @@ public class GameLoopManager : MonoBehaviour
         EventsManager.OnTeamWin -= OnTeamWinFaceoff;
         EventsManager.OnDefineNewMatchup -= DefineMatchup;
         EventsManager.OnRandomEventChance -= CheckForRandomEvent;
+        EventsManager.OnCornerGoal -= OnCornerGoal;
+        EventsManager.OnThrowToMidfield -= OnThrowToMidfield;
+        EventsManager.OnStartNewGame -= OnStartNewGame;
+    }
+
+    private void OnStartNewGame() {
+        StartNewGame();
     }
 
     private void OnPhraseCreated(PhrasesData data) {
@@ -107,8 +126,6 @@ public class GameLoopManager : MonoBehaviour
 
     private void DefineMatchup(ActionBtn lastActionPreformed, CTeam.Player lastPlayerThatPlayed, CTeam.PlayerPositions nextPositionToBePlayed)
     {
-
-
         CTeam currentTeamWithPossession = GetTeamNumberFromPlayer(lastPlayerThatPlayed);
         CTeam teamWithoutPossession = teams.Find(team => team != currentTeamWithPossession);
 
@@ -125,9 +142,10 @@ public class GameLoopManager : MonoBehaviour
                 currentProgress -= 2;
             else
                 currentProgress -= 1;
-            
 
-        switch (currentProgress)
+        currentTeamWinning = currentTeamWithPossession;
+            
+        switch (Mathf.Abs(currentProgress))
         {
             case 0:
                 teamWithoutPossession.nextPositionPlay = CTeam.PlayerPositions.MC;
@@ -211,14 +229,29 @@ public class GameLoopManager : MonoBehaviour
 
         faceOffData.teamNumber = teamNumber;
 
-        EventsManager.OnShowEndFaceoffScreen?.Invoke(faceOffData);
+        if(currentProgress == 2 || currentProgress == -2)
+        {
+            if(currentTeamWinning != GetTeamFromID(teamNumber))
+            {
+                if(UnityEngine.Random.value <= randomSaveEventChance)
+                {
+                    SaveGoalEvents saveGoalEvent = saveGoalEvents[Random.Range(0, saveGoalEvents.Length)];
+                    
+                    EventsManager.OnShowGoalSceneEventScreen?.Invoke(saveGoalEvent, this);
+                }
+            }else{
+                GoalScored(currentTeamWinning);
+            }
+        }else{
+            EventsManager.OnShowEndFaceoffScreen?.Invoke(faceOffData);
+        }
+        
+    
     }
     
     private void GoalScored(CTeam team)
     {
-        Debug.Log("Goal scored by " + team.teamName);
-
-        StartNewGame();
+        EventsManager.OnShowGoalScreen?.Invoke(team);
 
         EventsManager.OnGoal?.Invoke(team);
     }
@@ -237,6 +270,37 @@ public class GameLoopManager : MonoBehaviour
         CreateMatchup("Midfield!");
     }
 
+    private void OnCornerGoal(CTeam team)
+    {
+        GoalScored(team);
+    }
+
+    private void OnThrowToMidfield(CTeam team)
+    {
+        if(team.teamColor == TeamColor.Blue){
+            foreach(CTeam t in teams){
+                if(t.teamColor == TeamColor.Red)
+                    t.nextPositionPlay = CTeam.PlayerPositions.CB;
+                else if(t.teamColor == TeamColor.Blue){
+                    t.nextPositionPlay = CTeam.PlayerPositions.ST;
+                }
+            }
+            currentProgress = 1;
+        }
+        else{
+            foreach(CTeam t in teams){
+                if(t.teamColor == TeamColor.Red)
+                    t.nextPositionPlay = CTeam.PlayerPositions.ST;
+                else if(t.teamColor == TeamColor.Blue){
+                    t.nextPositionPlay = CTeam.PlayerPositions.CB;
+                }
+            }
+            currentProgress = -1;
+        }
+
+        CreateMatchup("Attack!");
+    }
+
     #region Utility Methods
 
     private PhraseType GetRandomPhraseType(){
@@ -244,6 +308,11 @@ public class GameLoopManager : MonoBehaviour
     }
     private CTeam.PlayerPositions GetRandomPosition(){
         return (CTeam.PlayerPositions)Random.Range(0, 3);
+    }
+
+    public PhrasesData GetPhraseDataFromType(PhraseType phraseType)
+    {
+        return phrases.Find(phrase => phrase.phraseType == phraseType);
     }
 
     private List<CTeam.Player> GetRandomPlayersFromTeamWithSpecificPosition(int numberOfPlayerToReturn, TeamColor teamColor, CTeam.PlayerPositions position){
@@ -270,6 +339,11 @@ public class GameLoopManager : MonoBehaviour
             }
         }
         return null;
+    }
+
+    public CTeam GetTeamFromID(int index)
+    {
+        return teams[index - 1];
     }
     
     #endregion
