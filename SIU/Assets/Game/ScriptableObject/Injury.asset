@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e6cd50383a9c1b4eb195d9daa63bee0, type: 3}
-  m_Name: Offside
+  m_Script: {fileID: 11500000, guid: b11ab25620195b04c928097c2075bd24, type: 3}
+  m_Name: Injury
   m_EditorClassIdentifier: 
-  eventName: Offside
-  eventDescription: After midfielder choses to make a pass to the striker the play
-    is called offside, player who passed the ball has to drink 3 times.
+  eventName: Injury Timeout!
+  eventDescription: A player decided by the team must recover, the other teammates
+    need to drink 3 sips in order to make him recover!
   eventIcon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}

@@ -12053,11 +12053,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _currentProgress: 0
-  randomEventChance: 0
-  randomSaveEventChance: 1
+  randomEventChance: 30
+  randomSaveEventChance: 0.4
   randomEvents:
   - {fileID: 11400000, guid: 507475502d7717b4a9357bf0ee8ceb62, type: 2}
   - {fileID: 11400000, guid: e73fc6d26f8fc82408de9ce2c547a5ca, type: 2}
+  - {fileID: 0}
   saveGoalEvents:
   - {fileID: 11400000, guid: c40ee8274c5aafa4db96c3ed9962c19a, type: 2}
   - {fileID: 11400000, guid: 2df2f3ea70f3fda41acc29a759f58c92, type: 2}

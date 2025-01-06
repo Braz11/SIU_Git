@@ -1,4 +1,4 @@
-# Install script for directory: C:/SIU_Git/SIU/Library/PramData/AndroidApplicationController/Cache/com.DefaultCompany.SIU/gradle-project/unityLibrary/src/main/cpp/GameActivity
+# Install script for directory: C:/SIU_Git/SIU/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/src/main/cpp/GameActivity
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
